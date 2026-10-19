@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<!--
+  =====================================================================
+  AMOR SEM FRONTEIRAS - Primeira página
+  Ordem (de cima para baixo): logo, nome, vídeo, frase, botão.
+  =====================================================================
+
+  POR QUE ESTA ARQUITETURA?
+
+  1) UMA PÁGINA, UMA TELA.
+     Tudo cabe na altura da tela do celular, sem precisar rolar.
+     Para isso, todos os tamanhos são medidos em uma unidade própria,
+     a "--u", que se ajusta sozinha à largura E à altura da tela.
+     Resultado: as proporções do desenho se mantêm em qualquer aparelho
+     (celular pequeno, celular grande, tablet e computador).
+
+  2) O VÍDEO É UM ARQUIVO EXTERNO (holograma-casal.mp4 / .webm).
+     A página fica leve (poucos KB), o vídeo carrega em streaming
+     e fica em cache. Mantenha os arquivos na mesma pasta.
+
+  3) O VÍDEO NUNCA É ESCONDIDO (nem em "reduzir movimento").
+     Nesse modo só paramos o brilho do logo que "respira".
+
+  4) PARA TROCAR TEXTOS E LINKS, procure por "TROQUE AQUI".
+  =====================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover: usa a tela inteira em celulares com "notch" -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0526">
+
+  <title>Amor sem Fronteiras</title>
+  <meta name="description" content="Inspirado na história real de Richard e Vanessa. Existe um lugar onde o seu amor não conhece distância.">
+  <meta property="og:title" content="Amor sem Fronteiras">
+  <meta property="og:description" content="Inspirado na história real de Richard e Vanessa. Existe um lugar onde o seu amor não conhece distância.">
+
+  <!-- Ícone da aba do navegador: o próprio logo -->
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preload" as="image" href="icons/logo-480.webp">
+
+  <!-- Fontes: Instrument Serif (nome e frase) e Hanken Grotesk (botão).
+       Carregam da internet; se falhar, o navegador usa uma fonte reserva. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <style>
+    /* =================================================================
+       1) CORES, FONTES E A UNIDADE "u"
+       ================================================================= */
+    :root {
+      --noite:    #0b0526;   /* fundo principal */
+      --ciano:    #52c8ff;
+      --violeta:  #8b4dff;
+      --magenta:  #e8309f;
+      --luz:      #f3eefe;   /* texto principal */
+
+      --serif: "Instrument Serif", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+      --sans:  "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+      /* A UNIDADE "u": o MENOR entre 1% da largura e 0,45% da altura da tela
+         (e no máximo 5,6px). Assim a página inteira cabe na tela, seja ela
+         alta e estreita (celular) ou larga (computador). */
+      --u: min(1vw, .45vh, 5.6px);
+    }
+    @supports (height: 1svh) {
+      /* "svh" = altura real em celulares (ignora a barra do navegador) */
+      :root { --u: min(1vw, .45svh, 5.6px); }
+    }
+    /* Celular deitado (tela baixa): não encolhe demais, a página rola */
+    @media (max-height: 520px) {
+      :root { --u: min(1vw, 3.6px); }
+    }
+
+    /* =================================================================
+       2) BASE DA PÁGINA
+       ================================================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { background: var(--noite); -webkit-text-size-adjust: 100%; }
+
+    body {
+      min-height: 100vh;
+      min-height: 100svh;
+      background: var(--noite);
+      color: var(--luz);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Luzes suaves de fundo, fixas atrás de tudo */
+    .atmosfera {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(60% 40% at 50% 0%,    rgba(139, 77, 255, .34), transparent 70%),
+        radial-gradient(70% 30% at 50% 50%,   rgba(139, 77, 255, .22), transparent 70%),
+        radial-gradient(60% 30% at 50% 100%,  rgba(232, 48, 159, .22), transparent 70%);
+    }
+
+    :focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+
+    /* =================================================================
+       3) A PÁGINA: uma coluna centralizada, 100u de largura
+       Cinco blocos, de cima para baixo. O espaço que sobrar é
+       distribuído igualmente entre eles (space-between).
+       ================================================================= */
+    .pagina {
+      width: calc(var(--u) * 100);
+      min-height: 100vh;
+      min-height: 100svh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: calc(var(--u) * 3);
+      text-align: center;
+      padding: max(calc(var(--u) * 4.5), env(safe-area-inset-top))
+               0
+               max(calc(var(--u) * 6),   env(safe-area-inset-bottom));
+    }
+
+    /* ---------- Bloco 1: logo + nome ---------- */
+    .logo-orbe {
+      position: relative;
+      width: calc(var(--u) * 36);
+      height: calc(var(--u) * 36);
+      margin: 0 auto;
+    }
+    .logo-orbe::before {                 /* brilho que "respira" atrás do logo */
+      content: ""; position: absolute; inset: -22%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(82, 200, 255, .42), rgba(139, 77, 255, .26) 45%, transparent 70%);
+      animation: respirar 6s ease-in-out infinite;
+    }
+    .logo-orbe img { position: relative; width: 100%; height: 100%; display: block; border-radius: 50%; }
+
+    @keyframes respirar {
+      0%, 100% { opacity: .55; transform: scale(.94); }
+      50%      { opacity: 1;   transform: scale(1.06); }
+    }
+
+    /* Nome: o degradê cobre o título inteiro (ciano -> lilás -> rosa) */
+    .nome {
+      margin-top: calc(var(--u) * 2.5);
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: calc(var(--u) * 10.6);
+      line-height: 1.05;
+      letter-spacing: -.012em;
+      text-wrap: balance;
+      background: linear-gradient(95deg, #8fdcff 0%, #c9b6ff 48%, #ff9bd6 100%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+    }
+
+
+    /* Subtítulo: a história real por trás da marca */
+    .historia {
+      margin-top: calc(var(--u) * 2);
+      font-family: var(--sans); font-weight: 500;
+      font-size: max(13px, calc(var(--u) * 3.6));
+      letter-spacing: .06em; text-transform: uppercase;
+      color: rgba(243, 238, 254, .78);
+      text-wrap: balance;
+    }
+
+    /* ---------- Bloco 2: o vídeo (o destaque da página) ---------- */
+    .moldura-video {
+      position: relative;
+      width: calc(var(--u) * 88);
+      aspect-ratio: 1 / 1;
+      border-radius: calc(var(--u) * 7);
+      overflow: hidden;
+      background: #000;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, .1),
+        0 calc(var(--u) * 6) calc(var(--u) * 16) calc(var(--u) * -4) rgba(139, 77, 255, .75),
+        0 0 calc(var(--u) * 22) calc(var(--u) * -3) rgba(232, 48, 159, .35);
+    }
+    .moldura-video video { width: 100%; height: 100%; display: block; object-fit: cover; }
+
+    /* Botão de plano B: só aparece se o navegador bloquear o autoplay */
+    .btn-tocar {
+      display: none; position: absolute; inset: 0; margin: auto;
+      width: 200px; height: 54px; border: 0; border-radius: 999px;
+      font: 600 16px/1 var(--sans); color: #fff; cursor: pointer;
+      background: linear-gradient(95deg, var(--violeta), var(--magenta));
+    }
+
+    /* ---------- Bloco 3: a frase ---------- */
+    .frase {
+      max-width: calc(var(--u) * 94);
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      font-size: calc(var(--u) * 7.6);
+      line-height: 1.15;
+      color: var(--luz);
+      text-wrap: balance;
+    }
+
+    /* ---------- Bloco 4: o botão ---------- */
+    .botao {
+      display: flex; align-items: center; justify-content: center;
+      width: calc(var(--u) * 81);
+      height: max(56px, calc(var(--u) * 16.5));
+      border-radius: 999px;
+      font: 600 max(17px, calc(var(--u) * 4.8))/1 var(--sans);
+      letter-spacing: .005em;
+      color: #fff; text-decoration: none;
+      background: linear-gradient(95deg, var(--violeta), var(--magenta));
+      box-shadow: 0 calc(var(--u) * 3) calc(var(--u) * 10) calc(var(--u) * -3) rgba(232, 48, 159, .75),
+                  inset 0 1px 0 rgba(255, 255, 255, .35);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .botao:hover  { transform: translateY(-2px); }
+    .botao:active { transform: scale(.98); }
+
+    /* TRANSIÇÃO ENTRE PÁGINAS: ao clicar no botão, a página escura se dissolve
+       na página clara do "mundo". Navegadores sem suporte simplesmente trocam de página. */
+    @view-transition { navigation: auto; }
+
+    /* =================================================================
+       4) REDUZIR MOVIMENTO: só paramos o brilho; o vídeo continua
+       ================================================================= */
+    @media (prefers-reduced-motion: reduce) {
+      .logo-orbe::before { animation: none; opacity: .8; }
+      .botao { transition: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Luzes de fundo (decorativas) -->
+  <div class="atmosfera" aria-hidden="true"></div>
+
+  <main class="pagina">
+
+    <!-- BLOCO 1: logo e nome -->
+    <header>
+      <div class="logo-orbe">
+        <img src="icons/logo-480.webp" alt="Logo Amor sem Fronteiras: um globo com um coração no centro" width="480" height="480" fetchpriority="high">
+      </div>
+      <h1 class="nome">Amor sem Fronteiras</h1>
+      <p class="historia">Inspirado na história real de Richard e Vanessa</p>
+    </header>
+
+    <!-- BLOCO 2: o vídeo em loop contínuo
+         autoplay + muted + playsinline: início automático (mudo é exigência
+         dos navegadores; playsinline é exigência do iPhone)
+         loop: repete para sempre; a volta de 360° fecha sem emenda.
+         MP4 para iPhone/Safari, WebM como alternativa. -->
+    <div class="moldura-video">
+      <video id="videoLoop" autoplay loop muted playsinline preload="auto"
+             poster="holograma-poster.jpg"
+             aria-label="Um casal em holograma girando sobre uma base luminosa">
+        <source src="holograma-casal.mp4" type="video/mp4">
+        <source src="holograma-casal.webm" type="video/webm">
+      </video>
+      <button id="btnTocar" class="btn-tocar" type="button">Toque para reproduzir</button>
+    </div>
+
+    <!-- BLOCO 3: a frase. TROQUE AQUI o texto, se quiser. -->
+    <p class="frase">Existe um lugar onde o seu amor não conhece distância.</p>
+
+    <!-- BLOCO 4: o botão. TROQUE AQUI o texto e o destino (href).
+         O destino é "mundo.html": a segunda página do site. Os dois arquivos
+         precisam ficar na MESMA pasta. -->
+    <a class="botao" href="home.html">Conheça o nosso mundo</a>
+
+  </main>
+
+  <script>
+    (function () {
+      var video    = document.getElementById('videoLoop');
+      var btnTocar = document.getElementById('btnTocar');
+
+      video.muted = true;                       // mudo = autoplay permitido
+
+      /* C) Toca; se o navegador bloquear, mostra o botão de plano B */
+      function tocar() {
+        var p = video.play();
+        if (p && p.then) {
+          p.then(function () { btnTocar.style.display = 'none'; })
+           .catch(function () { btnTocar.style.display = 'block'; });
+        }
+      }
+      tocar();
+
+      /* D) Anti-trava: retoma se algo pausar o vídeo */
+      video.addEventListener('pause', function () { if (!document.hidden) tocar(); });
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) tocar(); });
+
+      /* E) Plano B: o toque do usuário libera o vídeo */
+      btnTocar.addEventListener('click', tocar);
+      document.addEventListener('pointerdown', tocar, { once: true });
+    })();
+  </script>
+</body>
+</html>
