@@ -1,0 +1,455 @@
+<!doctype html>
+<!--
+  =====================================================================
+  AMOR SEM FRONTEIRAS - APP ROMÂNTICO GRATUITO
+  Versão 1.0 - Gratuita - Apenas mensagens românticas
+  =====================================================================
+
+  POR QUE ESTA ARQUITETURA?
+
+  1) UMA PÁGINA, UMA TELA, UM TOM.
+     Esta é a versão gratuita: apenas romantico. Sem sensual, sem atrevido.
+     Tudo cabe na tela do celular, sem rolar desnecessário.
+     Medidas em "--u" como na primeira página, para manter proporção.
+
+  2) 3 ANOS SEM REPETIR - GARANTIA MATEMÁTICA.
+     Pool romantico:
+       A = 24 inícios
+       B = 30 meios
+       C = 16 finais
+       Total = 24*30*16 = 11.520 combinações únicas
+       3 anos = 365*3 = 1.095 dias
+       11.520 > 1.095, logo temos 10x mais frases que o necessário.
+       
+       Algoritmo: index = (dia * step) % total
+       step = 7519 (primo com 11.520, mdc=1)
+       Isso garante ciclo de 11.520 dias (31,5 anos) sem repetir.
+       Logo, 3 anos = garantido sem repetição.
+
+  3) LÓGICA DE DATA FIXA (EPOCH).
+     EPOCH = 01/01/2026 UTC. O dia 0 é 01/01/2026.
+     Assim todo mundo no mundo vê a mesma frase no mesmo dia.
+
+  4) GRATUITO E LEVE.
+     Sem portão +18, sem abas de sensual/atrevido.
+     Apenas: Hoje, Calendário (365 dias), Salvas, Sobre.
+
+  5) PARA TROCAR TEXTOS, procure por "TROQUE AQUI".
+  =====================================================================
+-->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e3effc">
+<meta name="color-scheme" content="light">
+<!-- TROQUE AQUI: descrição -->
+<meta name="description" content="Amor Sem Fronteiras - Versão Gratuita. Uma frase romântica por dia, sem repetições. Inspirado na história real de Richard e Vanessa.">
+<title>Amor Sem Fronteiras - Gratuito</title>
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Amor Sem Fronteiras">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+
+<style>
+  /* =================================================================
+     1) IDENTIDADE VISUAL - VERSÃO GRATUITA (Romântico = lavanda e rosa)
+     ================================================================= */
+  :root {
+    --bg1: #e3effc; /* azul claro */
+    --bg2: #fde4ea; /* rosa claro */
+    --ink: #10284f;
+    --muted: #4a5f86;
+    --accent: #c8243f;
+    --surface: rgba(255,255,255,.72);
+    --line: rgba(16,40,79,.14);
+    --display: "Instrument Serif", Georgia, serif;
+    --body: "Figtree", system-ui, sans-serif;
+    --mono: "DM Mono", monospace;
+    --max: 520px;
+    --u: min(1vw, .52vh, 6px);
+  }
+  @supports (height: 1svh) { :root { --u: min(1vw, .52svh, 6px); } }
+
+  /* BASE */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    min-height: 100vh; color: var(--ink); font-family: var(--body);
+    background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
+    overflow-x: hidden; -webkit-text-size-adjust: 100%;
+  }
+  button { font: inherit; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+  /* LAYOUT APP */
+  .app { width: min(100%, var(--max)); margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* HEADER - Logo oficial */
+  .header { padding: calc(var(--u)*4) calc(var(--u)*6) calc(var(--u)*3); display: flex; align-items: center; gap: 11px; }
+  .logo { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px rgba(16,40,79,.12); }
+  .brand { font-family: var(--display); font-size: 24px; font-style: italic; line-height: 1; }
+  .brand small { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 2px; font-style: normal; }
+
+  /* BADGE GRATUITO */
+  .badge { margin-left: auto; padding: 6px 10px; border-radius: 999px; background: rgba(200,36,63,.12); color: var(--accent); font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+
+  /* CARD PRINCIPAL */
+  .main { flex: 1; padding: 0 calc(var(--u)*5) calc(var(--u)*6); display: flex; flex-direction: column; gap: calc(var(--u)*4); }
+
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  
+  .card {
+    position: relative; background: var(--surface); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--line); border-radius: 24px; padding: calc(var(--u)*8) calc(var(--u)*6);
+    min-height: calc(var(--u)*52); display: flex; flex-direction: column; justify-content: center;
+    box-shadow: 0 20px 50px rgba(16,40,79,.08);
+  }
+  .phrase { font-family: var(--display); font-size: clamp(24px, calc(var(--u)*7), 30px); line-height: 1.25; text-wrap: balance; }
+  .meta { margin-top: calc(var(--u)*4); font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  /* NAVEGAÇÃO DE DIAS */
+  .nav { display: flex; align-items: center; gap: 10px; }
+  .nav button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255,255,255,.6); cursor: pointer; display: grid; place-items: center; transition: .2s; }
+  .nav button:hover { border-color: var(--accent); }
+  .nav span { flex: 1; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  /* AÇÕES */
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn { min-height: 52px; border-radius: 15px; border: 1px solid var(--line); background: rgba(255,255,255,.6); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: .2s; }
+  .btn:hover { transform: translateY(-2px); border-color: rgba(200,36,63,.3); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 12px 30px rgba(200,36,63,.22); }
+  .btn-primary:hover { background: #a91e36; }
+
+  /* PERSONALIZAÇÃO */
+  .to-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .to-row input { flex: 1; min-width: 120px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.7); padding: 0 14px; font-family: var(--body); }
+  .to-row input:focus { outline: 2px solid var(--accent); }
+
+  /* ABAS */
+  .tabs { display: flex; gap: 6px; padding: 12px; background: rgba(255,255,255,.5); border-radius: 18px; border: 1px solid var(--line); }
+  .tab { flex: 1; height: 40px; border-radius: 12px; border: 0; background: transparent; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); cursor: pointer; }
+  .tab[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 4px 12px rgba(16,40,79,.08); font-weight: 600; }
+
+  /* LISTAS */
+  .list { display: grid; gap: 8px; max-height: 56vh; overflow: auto; }
+  .row { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.7); border: 1px solid var(--line); cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
+  .row b { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .row p { font-family: var(--display); font-size: 15px; line-height: 1.3; }
+
+  [hidden] { display: none !important; }
+  .row b { white-space: nowrap; min-width: 86px; }
+  .row > div { display: flex; gap: 12px; flex: 1; }
+
+  /* RODAPÉ */
+  .footer { padding: 18px; text-align: center; font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .04em; }
+
+  /* TOAST */
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 999px; font-size: 13px; opacity: 0; pointer-events: none; transition: .3s; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- HEADER - Logo oficial -->
+  <header class="header">
+    <img class="logo" src="icons/logo-480.webp" alt="Amor Sem Fronteiras - Logo oficial" width="42" height="42">
+    <div class="brand">Amor Sem Fronteiras <small>Versão gratuita · Frases sem repetições</small></div>
+    <div class="badge">Romântico</div>
+  </header>
+
+  <main class="main">
+    <!-- KICKER -->
+    <div class="kicker" id="kicker">Frase de hoje · Gratuito</div>
+
+    <!-- CARD DA FRASE -->
+    <div class="card" id="card">
+      <div class="phrase" id="phrase">Carregando...</div>
+      <div class="meta" id="meta"></div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="nav">
+      <button id="prev" aria-label="Frase anterior">←</button>
+      <span id="diaLabel">Hoje</span>
+      <button id="next" aria-label="Próxima frase">→</button>
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="actions">
+      <button class="btn" id="copy"><span id="copyLabel">Copiar</span> 📋</button>
+      <a class="btn btn-primary" id="send" target="_blank" rel="noopener">WhatsApp ♥</a>
+      <button class="btn" id="save" style="grid-column: 1/-1;">Guardar ❤️</button>
+    </div>
+
+    <!-- PERSONALIZAÇÃO -->
+    <div class="to-row" id="toRow">
+      <!-- TROQUE AQUI: personalização com nome -->
+      <input id="nome" placeholder="Nome dele(a) - ex: Vanessa" maxlength="30">
+      <input id="assina" placeholder="Assina como? - ex: Richard" maxlength="30">
+    </div>
+
+    <!-- ABAS - Apenas romantico -->
+    <div class="tabs" role="tablist">
+      <button class="tab" id="tabHoje" role="tab" aria-selected="true">Hoje</button>
+      <button class="tab" id="tabDias" role="tab" aria-selected="false">Calendário</button>
+      <button class="tab" id="tabSalvas" role="tab" aria-selected="false">Salvas</button>
+      <button class="tab" id="tabSobre" role="tab" aria-selected="false">Sobre</button>
+    </div>
+
+    <!-- LISTAS (invisíveis até trocar aba) -->
+    <div class="list" id="diasList" hidden></div>
+    <div class="list" id="salvasList" hidden></div>
+    <div id="sobreBox" hidden style="font-size:15px; line-height:1.65; color:#3e506c; padding:6px 4px 12px;">
+      <p><strong>Amor de Hoje</strong> é o app gratuito do Amor Sem Fronteiras, criado a partir da história real de Richard e Vanessa, um casal que venceu a distância.</p>
+      <p style="margin-top:12px;"><b>Como usar:</b> a frase muda todo dia. Escreva o nome de quem você ama e como você assina, toque em <b>Copiar</b> ou <b>WhatsApp</b> e envie. Use <b>Guardar</b> para manter as suas favoritas em <b>Salvas</b>. No <b>Calendário</b> você vê as frases dos próximos dias.</p>
+      <p style="margin-top:12px;"><b>Privacidade:</b> o nome, a assinatura e as frases guardadas ficam só no seu aparelho. Não pedimos cadastro.</p>
+      <p style="margin-top:12px;">Em breve: versão completa, com mais tons de mensagem, e o app na Google Play.</p>
+      <p style="margin-top:16px; font-family: var(--mono); font-size:11px; color:var(--muted); line-height:1.9;">
+        <a href="../home.html" style="text-decoration:underline">Site</a> · <a href="../historia.html" style="text-decoration:underline">Nossa história</a> · <a href="../privacidade.html" style="text-decoration:underline">Privacidade</a> · <a href="../termos.html" style="text-decoration:underline">Termos</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="footer">© 2026 Amor Sem Fronteiras · Feito com propósito e carinho · Inspirado em Richard & Vanessa</footer>
+  <div class="toast" id="toast"></div>
+  <div id="status" aria-live="polite" style="position:absolute; left:-9999px;"></div>
+</div>
+
+<!-- ================================================================
+     LÓGICA DO APP - 3 ANOS SEM REPETIR
+     ================================================================ -->
+<script>
+  // POOLS - APENAS ROMÂNTICO (versão gratuita)
+  const POOLS = {
+    romantico: {
+      step: 7519, // número primo com 11520, mdc=1, garante ciclo de 11520
+      A: [
+        "Todas as manhãs,", "Mesmo nos dias pesados,", "Quando a noite chega,", "Sem perceber,",
+        "Em cada pequeno instante,", "No meio da correria,", "Quando o silêncio fala,", "Toda vez que você sorri,",
+        "Nos dias de chuva,", "Quando penso no futuro,", "Antes de dormir,", "Sempre que ouço o seu nome,",
+        "Mesmo de longe,", "Em qualquer cidade do mundo,", "Quando o fuso horário nos separa,", "Nos domingos preguiçosos,",
+        "No caminho de volta pra casa,", "Quando você me abraça,", "Entre uma mensagem e outra,", "Do outro lado do mundo,",
+        "Quando a saudade aperta,", "Mesmo a milhares de quilômetros,", "Hoje, como em todos os dias,", "Se alguém me pergunta onde é o meu lugar,"
+      ],
+      B: [
+        "eu escolho você de novo", "lembro por que me apaixonei", "percebo que meu coração já mora em você",
+        "descubro um motivo novo para amar você", "me sinto em casa", "agradeço por termos nos encontrado",
+        "penso em você antes de qualquer coisa", "acredito mais no amor", "queria te dizer o quanto você importa",
+        "vejo o quanto crescemos juntos", "sinto o mundo ficar mais leve", "guardo você no melhor lugar de mim",
+        "sei que encontrei o meu lugar", "quero ficar ao seu lado", "fico com o coração tranquilo",
+        "sorrio sem nem saber por quê", "te amo um pouco mais", "tenho certeza do que sinto",
+        "lembro que o amor é simples com você", "desejo todos os meus dias ao seu lado", "me surpreendo com tanta ternura",
+        "só consigo pensar em você", "sinto gratidão por cada detalhe seu", "vejo beleza até no que é comum",
+        "tenho vontade de cuidar de você", "imagino mais mil histórias contigo", "me sinto a pessoa mais sortuda do mundo",
+        "entendo o que é amar de verdade", "sinto que o tempo passa devagar com você", "me apaixono mais uma vez"
+      ],
+      C: [
+        "e isso me basta.", "e nunca me canso disso.", "e é a melhor parte dos meus dias.", "e não trocaria por nada.",
+        "e sempre vai ser você.", "e o resto fica pequeno.", "e isso muda tudo em mim.", "e é tudo o que eu queria.",
+        "e o amor só cresce.", "e tudo faz sentido.", "e não me imagino de outro jeito.", "e continuo aqui, de corpo e alma.",
+        "e é por isso que eu fico.", "e faço questão de repetir.", "e prometo não esquecer.", "e hoje eu digo em voz alta."
+      ]
+    }
+  };
+
+  const EPOCH = Date.UTC(2026, 0, 1); // 01/01/2026
+  function totalOf(p) { return p.A.length * p.B.length * p.C.length; } // 11520
+  function dayNumber(date) {
+    return Math.round((Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - EPOCH) / 86400000);
+  }
+  function indexFor(d) {
+    const p = POOLS.romantico, n = totalOf(p);
+    return (((d * p.step) % n) + n) % n;
+  }
+  function phraseFor(d, name) {
+    const p = POOLS.romantico, i = indexFor(d);
+    const a = p.A[i % p.A.length];
+    const b = p.B[Math.floor(i / p.A.length) % p.B.length];
+    const c = p.C[Math.floor(i / (p.A.length * p.B.length)) % p.C.length];
+    let text = a + " " + b + ", " + c;
+    if (name) text = name + ", " + text.charAt(0).toLowerCase() + text.slice(1);
+    return text;
+  }
+
+  // Verificação de garantia 3 anos (1095 dias)
+  // console.log("Garantia 3 anos:", new Set(Array.from({length:1095}, (_,k)=>phraseFor(k,""))).size === 1095);
+</script>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var root = document.documentElement;
+  var today = dayNumber(new Date());
+  var offset = 0;
+  var name = "", sig = "";
+  var saved = [];
+
+  // Load
+  function load(k, def){ try{ return localStorage.getItem(k) || def; }catch(e){ return def; } }
+  function store(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+  name = (load("asf-nome","")).slice(0,30);
+  sig = (load("asf-assina","")).slice(0,30);
+  $("nome").value = name;
+  $("assina").value = sig;
+  try{
+    var raw = JSON.parse(load("asf-salvas-gratis","[]"));
+    saved = Array.isArray(raw) ? raw : [];
+  }catch(e){ saved = []; }
+
+  function withSig(t){ return sig ? t + "\n\n— " + sig : t; }
+  function keyOf(d){ return "romantico:"+d; }
+  function shortOf(d){
+    var dt = new Date(EPOCH + d*86400000);
+    return dt.toLocaleDateString("pt-BR", {day:"2-digit", month:"short", timeZone:"UTC"});
+  }
+
+  function renderHoje(animate){
+    var d = today + offset;
+    var txt = phraseFor(d, name);
+    $("phrase").textContent = txt;
+    $("meta").textContent = "Dia " + (d+1) + " · " + shortOf(d) + " · " + totalOf(POOLS.romantico).toLocaleString("pt-BR") + " combinações no total";
+    $("diaLabel").textContent = offset===0 ? "Hoje · " + shortOf(d) : shortOf(d) + " · Dia " + (d+1);
+    var k = keyOf(d);
+    $("save").textContent = saved.some(s=>s.key===k) ? "Remover dos salvos 💔" : "Guardar ❤️";
+    var wa = "https://api.whatsapp.com/send?text=" + encodeURIComponent(withSig(txt));
+    $("send").href = wa;
+    if(animate){ $("card").animate([{transform:"translateY(6px)", opacity:.7},{transform:"translateY(0)", opacity:1}], {duration:220, easing:"ease-out"}); }
+  }
+
+  function renderDias(){
+    var list = $("diasList"); list.innerHTML="";
+    for(var i=-7;i<=30;i++){
+      var d = today + i;
+      var row = document.createElement("div"); row.className="row"; row.dataset.k=i;
+      row.innerHTML = "<b>"+ (i===0?"HOJE": shortOf(d).toUpperCase()) +"</b><p>"+ phraseFor(d,name)+"</p>";
+      list.appendChild(row);
+    }
+  }
+  function renderSalvas(){
+    var list = $("salvasList"); list.innerHTML="";
+    if(!saved.length){
+      list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--muted); font-size:14px;">Nenhuma frase guardada ainda.<br>Toque em Guardar na tela Hoje.</div>';
+      return;
+    }
+    saved.slice().reverse().forEach(function(s){
+      var row = document.createElement("div"); row.className="row";
+      row.dataset.d = s.d;
+      var box = document.createElement("div");
+      var b = document.createElement("b"); b.textContent = shortOf(s.d);
+      var pp = document.createElement("p"); pp.textContent = s.text;
+      box.appendChild(b); box.appendChild(pp);
+      var del = document.createElement("button"); del.type="button"; del.dataset.key = s.key; del.setAttribute("aria-label","Remover frase"); del.style.cssText="border:0;background:transparent;cursor:pointer;font-size:18px"; del.textContent="🗑️";
+      row.appendChild(box); row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+
+  function setScreen(name){
+    var tabs = ["Hoje","Dias","Salvas","Sobre"];
+    tabs.forEach(function(t){
+      $("tab"+t).setAttribute("aria-selected", String(t.toLowerCase()===name.toLowerCase()));
+    });
+    $("card").style.display = name==="hoje" ? "" : "none";
+    document.querySelector(".nav").style.display = name==="hoje" ? "" : "none";
+    document.querySelector(".actions").style.display = name==="hoje" ? "" : "none";
+    document.getElementById("toRow").style.display = name==="hoje" ? "" : "none";
+    document.getElementById("kicker").style.display = name==="hoje" ? "" : "none";
+    $("diasList").hidden = name!=="dias";
+    $("salvasList").hidden = name!=="salvas";
+    $("sobreBox").hidden = name!=="sobre";
+    if(name==="dias") renderDias();
+    if(name==="salvas") renderSalvas();
+  }
+
+  $("prev").addEventListener("click", function(){ offset--; renderHoje(true); });
+  $("next").addEventListener("click", function(){ offset++; renderHoje(true); });
+  $("tabHoje").addEventListener("click", function(){ setScreen("hoje"); });
+  $("tabDias").addEventListener("click", function(){ setScreen("dias"); });
+  $("tabSalvas").addEventListener("click", function(){ setScreen("salvas"); });
+  $("tabSobre").addEventListener("click", function(){ setScreen("sobre"); });
+
+  $("diasList").addEventListener("click", function(e){
+    var r = e.target.closest(".row"); if(!r) return;
+    offset = Number(r.dataset.k); renderHoje(true); setScreen("hoje");
+  });
+  $("salvasList").addEventListener("click", function(e){
+    var b = e.target.closest("button");
+    if(!b){
+      var r = e.target.closest(".row"); if(!r || r.dataset.d===undefined) return;
+      offset = Number(r.dataset.d) - today; renderHoje(true); setScreen("hoje"); return;
+    }
+    saved = saved.filter(s=>s.key!==b.dataset.key);
+    store("asf-salvas-gratis", JSON.stringify(saved));
+    renderSalvas(); renderHoje(false); showToast("Frase removida");
+  });
+  $("save").addEventListener("click", function(){
+    var d = today+offset, k = keyOf(d);
+    if(saved.some(s=>s.key===k)){
+      saved = saved.filter(s=>s.key!==k); showToast("Removida das salvas");
+    }else{
+      saved.push({key:k, d:d, text:withSig($("phrase").textContent)}); showToast("Guardada em Salvas ❤️");
+    }
+    store("asf-salvas-gratis", JSON.stringify(saved));
+    renderHoje(false);
+  });
+
+  $("nome").addEventListener("input", function(e){
+    name = e.target.value.trim().slice(0,30);
+    store("asf-nome", name); renderHoje(false);
+  });
+  $("assina").addEventListener("input", function(e){
+    sig = e.target.value.trim().slice(0,30);
+    store("asf-assina", sig); renderHoje(false);
+  });
+
+  var toastTimer;
+  function showToast(msg){
+    var t=$("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.remove("show"); },2800);
+  }
+  $("copy").addEventListener("click", function(){
+    var text = withSig($("phrase").textContent);
+    function fallback(){
+      try{
+        var ta=document.createElement("textarea"); ta.value=text; ta.setAttribute("readonly",""); ta.style.cssText="position:fixed;left:-9999px;top:0";
+        document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,text.length);
+        var ok=document.execCommand("copy"); document.body.removeChild(ta);
+        showToast(ok ? "Frase copiada!" : "Não copiou. Selecione e copie manualmente.");
+      }catch(e){ showToast("Não copiou. Selecione e copie manualmente."); }
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ showToast("Frase copiada!"); }, fallback);
+    } else { fallback(); }
+  });
+
+  renderHoje(false);
+
+  // Virou o dia com o app aberto: mostra a frase nova sozinho
+  function checkDay(){
+    var n = dayNumber(new Date());
+    if(n !== today){ today = n; offset = 0; renderHoje(true); }
+  }
+  setInterval(checkDay, 30000);
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden) checkDay(); });
+  window.addEventListener("focus", checkDay);
+})();
+</script>
+
+<script>
+  if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  }
+</script>
+</body>
+</html>
